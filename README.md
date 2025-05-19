@@ -4,9 +4,16 @@
 This project implements a big data example that automates the complete process of capturing, ingesting, processing, and outputting actionable data using AWS services.
 
 ## Architecture
-
-```
-Data Sources -> Automatic Ingestion -> S3 Raw -> EMR (Spark ETL) -> S3 Trusted -> EMR (Spark Analytics) -> S3 Refined -> Queries (Athena/API)
+```mermaid
+graph LR
+    DS[Data Sources] --> AI[Automatic Ingestion]
+    AI --> S3R[S3 Raw]
+    S3R --> EMR1[EMR Spark ETL]
+    EMR1 --> S3T[S3 Trusted]
+    S3T --> EMR2[EMR Spark Analytics]
+    EMR2 --> S3REF[S3 Refined]
+    S3REF --> Q1[Athena Queries]
+    S3REF --> Q2[API Gateway]
 ```
 
 ## Components
