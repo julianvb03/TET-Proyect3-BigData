@@ -15,6 +15,21 @@ graph LR
     S3REF --> Q1[Athena Queries]
     S3REF --> Q2[API Gateway]
 ```
+```mermaid
+graph LR
+    DS[Data Sources] --> LAMBDA1[Lambda\nIngestion]
+    LAMBDA1 --> S3R[S3 Raw]
+    CW[EventBridge\nScheduler] -->|Triggers| LAMBDA1
+    S3R -->|Triggers| LAMBDA2[Lambda\nOrchestration]
+    LAMBDA2 -->|Creates/Configures| EMR1[EMR Spark ETL]
+    EMR1 --> S3T[S3 Trusted]
+    S3T -->|Triggers| LAMBDA3[Lambda\nOrchestration]
+    LAMBDA3 -->|Creates/Configures| EMR2[EMR Spark Analytics]
+    EMR2 --> S3REF[S3 Refined]
+    S3REF --> ATHENA[Athena Queries]
+    S3REF --> LAMBDA4[Lambda\nAPI Backend]
+    LAMBDA4 --> APIGW[API Gateway]
+```
 
 ## Components
 
