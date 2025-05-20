@@ -1,52 +1,47 @@
-# Project 3 - Batch Architecture for Big Data
+# Proyecto 3 – Arquitectura Batch para Big Data (ST0263 - EAFIT)
 
 ## General Description
 This project implements a big data example that automates the complete process of capturing, ingesting, processing, and outputting actionable data using AWS services.
 
 ## Architecture
-```mermaid
-graph LR
-    DS[Data Sources] --> AI[Automatic Ingestion]
-    AI --> S3R[S3 Raw]
-    S3R --> EMR1[EMR Spark ETL]
-    EMR1 --> S3T[S3 Trusted]
-    S3T --> EMR2[EMR Spark Analytics]
-    EMR2 --> S3REF[S3 Refined]
-    S3REF --> Q1[Athena Queries]
-    S3REF --> Q2[API Gateway]
-```
-```mermaid
-graph LR
-    DS[Data Sources] --> LAMBDA1[Lambda\nIngestion]
-    LAMBDA1 --> S3R[S3 Raw]
-    CW[EventBridge\nScheduler] -->|Triggers| LAMBDA1
-    S3R -->|Triggers| LAMBDA2[Lambda\nOrchestration]
-    LAMBDA2 -->|Creates/Configures| EMR1[EMR Spark ETL]
-    EMR1 --> S3T[S3 Trusted]
-    S3T -->|Triggers| LAMBDA3[Lambda\nOrchestration]
-    LAMBDA3 -->|Creates/Configures| EMR2[EMR Spark Analytics]
-    EMR2 --> S3REF[S3 Refined]
-    S3REF --> ATHENA[Athena Queries]
-    S3REF --> LAMBDA4[Lambda\nAPI Backend]
-    LAMBDA4 --> APIGW[API Gateway]
-```
 
-## Components
 
-### 1. Data Sources
-- 
+# Tasks
+### Configuración inicial
+- [ ] Crear buckets S3: Zonificado (Raw, Trusted y Refined)
 
-### 2. Data Ingestion
-- 
+### Captura e ingesta de datos
+- [ ] Desarrollar script de descarga de datos desde URL/archivos de sobre el covid-19
+- [ ] Desarrollar script de consumo de API de XXX
+- [ ] Implementar base de datos relacional (MySQL/PostgreSQL en RDS)
+- [ ] Crear script de extracción de datos de la base de datos relacional
+- [ ] Automatizar ingesta a S3 Raw usando Lambda y EventBridge
+- [ ] Implementar verificación de duplicados en la zona Raw
 
-### 3. ETL Processing
-- 
+### Procesamiento ETL
+- [ ] Desarrollar scripts PySpark para limpieza y unión de datos
+- [ ] Automatizar creación de clúster EMR (CLI/CloudFormation)
+- [ ] Configurar Steps de EMR para ejecución automática de ETL
+- [ ] Definir estructura de almacenamiento en S3 Trusted
 
-### 4. Analysis and Analytics
-- 
+### Análisis y analítica avanzada
+- [ ] Implementar scripts de análisis descriptivo con SparkSQL
+- [ ] Desarrollar pipeline de ML con SparkML
+- [ ] Configurar Steps de EMR para análisis y almacenamiento en S3 Refined
+- [ ] Definir dependencias entre Steps ETL y analítica
 
-### 5. Data Access
-- 
+### Acceso y visualización
+- [ ] Configurar AWS Athena para consultas en S3 Refined
+- [ ] Crear API Gateway con backend Lambda para acceso programático
+- [ ] Desarrollar notebook Jupyter para demostración de consultas
+- [ ] Implementar cliente de prueba para la API
+
+### Orquestación y automatización
+- [ ] Integrar flujo completo con AWS Step Functions
+- [ ] Programar ejecuciones periódicas usando EventBridge
+- [ ] Configurar alertas y monitoreo con CloudWatch
+- [ ] Crear dashboard de monitoreo en AWS
+---
 
 ## Repository Structure
 
@@ -65,65 +60,62 @@ graph LR
 └── README.md
 ```
 
-## Prerequisites
-- AWS Academy account
-- Configured AWS CLI
-- Python 3.8+
-- Apache Spark
-- Git
+---
 
-## Initial Setup
+# Configuraciones
 
-### AWS Configuration
-1. Create IAM roles with necessary permissions
-2. Configure S3 buckets for Raw, Trusted, and Refined zones
-3. Set up RDS for relational database
+## 📂 Requisitos
+- Python 3.12.0
+- Paquetes:
+  - `pandas`
+  - `requests`
 
-### Local Installation
-```bash
-# Example
-# Clone repository
-git clone https://github.com/username/project3-big-data.git
-cd project3-big-data
+## :floppy_disk: Bucket S3
 
+Se creó un bucket en S3 con el siguiente nombre:
 
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+```text
+st0263-proyecto3
 ```
 
-## Implementation
-
-### 1. Data Ingestion
-```bash
-# Configure Lambda function for ingestion
+### Estructura esperada:
+```plaintext
+s3://st0263-proyecto3/
+├── raw/
+│   ├── covid/
+│   │   └── covid_YYYYMMDD_HHMMSS.csv
 ```
 
-### 2. ETL Processing
-```bash
-# Deploy EMR cluster and configure Steps
-```
+> ⚠️ Debido a restricciones de AWS Academy (sin acceso a IAM), el bucket tiene habilitado el acceso público limitado a `s3:PutObject` mediante una política de bucket.
 
-### 3. Data Analysis
-```bash
-# Run analysis on EMR cluster
-```
+---
 
-### 4. Query Configuration
-```bash
-# Configure Athena
+## ⚙️ Configuración de permisos (AWS Academy)
 
-# Deploy API Gateway
+Debido a las restricciones de IAM en AWS Academy:
+
+- El bucket tiene la política pública **temporal** para permitir `PutObject`:
+
+```json
+{
+  "Effect": "Allow",
+  "Principal": "*",
+  "Action": "s3:PutObject",
+  "Resource": "arn:aws:s3:::st0263-proyecto3/*"
+}
+
 ```
+En general se expondran de manera pública todos los recursos, para simplificar el despliegue y hacer enfasis en la creación de la infraestrutura y servicios necesarios.
 
 ## Usage
 
-### Athena Queries
-1. ...
-
-### API Queries
-```bash
-# Example of API query
-```
-
+---
 ## Authors
+**Nombres:** 
+	- Juan Felipe Restrepo Buitrago
+	- Kevin Quiroz González
+	- Julian Estiven Valencia Bolaños
+	- Julian Agudelo Cifuentes
+**Curso:** ST0263 - Tópicos Especiales en Telemática  
+**Universidad:** EAFIT  
+**Periodo:** 2025-1
