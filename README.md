@@ -1,9 +1,47 @@
-# Proyecto 3 – Arquitectura Batch para Big Data (ST0263 - EAFIT)
+# Project 3 – Batch Architecture for Big Data (ST0263 - EAFIT)
 
 ## General Description
 This project implements a big data example that automates the complete process of capturing, ingesting, processing, and outputting actionable data using AWS services.
 
 ## Architecture
+
+```mermaid
+C4Deployment
+title Architecture Diagram
+
+Person(clientA, "Client A", "A client which wants to access the data processed for COVID-19.")
+
+Enterprise_Boundary(b1, "AWS Academy") {
+
+  Component(ComponentA, "Athena or API Gateway", "Access to the data processed for COVID-19.")
+
+  Component(ComponentF, "CloudWatch", "Trigger for scheduled jobs.")
+
+  Deployment_Node(b2, "Simulated External Services") {
+    ComponentDb(externalDB, "External DB", "Simulated external database.")
+  }
+
+  ComponentDb(s3, "BigData Bucket", "Raw, trusted, and refined data.")
+
+  Deployment_Node(b3, "AWS Lambda") {
+    Component(ComponentB, "Show Results", "Show processed data.")
+    Component(ComponentC, "Ingest Data", "Ingest data from external services.")
+    Component(ComponentD, "Create EMR", "Create and configure EMR cluster.")
+  }
+
+  Deployment_Node(b4, "AWS EMR") {
+    Component(ComponentE, "Step", "ETL, SparkSQL, and ML steps.")
+  }
+}
+
+Rel(clientA, ComponentA, "Accesses")
+BiRel(ComponentA, ComponentB, "Shows results")
+Rel(ComponentC, s3, "Stores raw data")
+Rel(ComponentE, s3, "Stores trusted and refined data")
+Rel(ComponentF, ComponentC, "Triggers")
+Rel(ComponentC, ComponentD, "Triggers")
+Rel(ComponentD, ComponentE, "Creates and triggers")
+```
 
 
 # Tasks
