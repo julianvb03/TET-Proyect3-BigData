@@ -6,9 +6,9 @@ import boto3
 s3_client = boto3.client('s3')
 lambda_client = boto3.client('lambda')
 
-BUCKET_NAME = 'st0263-proyecto3'
-COVID_RAW_PREFIX = 'raw/covid/'
-EMR_LAMBDA_NAME = 'crearClusterEMR'
+BUCKET_NAME = 'st0263-proyecto3'  # Replace with your S3 bucket name
+COVID_RAW_PREFIX = 'raw/'
+EMR_LAMBDA_NAME = 'crearClusterEMR'  # Replace with your EMR Lambda function name
 
 def lambda_handler(event, context):
     """
@@ -18,13 +18,13 @@ def lambda_handler(event, context):
     
     # --- CSV desde URL ---
     try:
-        covid_url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/latest/owid-covid-latest.csv"
+        covid_url = "https://raw.githubusercontent.com/julianvb03/TET-Proyect3-BigData/refs/heads/main/data/covid_data.csv"
         df = pd.read_csv(covid_url)
 
         csv_buffer = StringIO()
         df.to_csv(csv_buffer, index=False)
         
-        covid_key = f'{COVID_RAW_PREFIX}covid_{timestamp}.csv'
+        covid_key = f'{COVID_RAW_PREFIX}covid_data.csv'
         s3_client.put_object(
             Bucket=BUCKET_NAME,
             Key=covid_key,

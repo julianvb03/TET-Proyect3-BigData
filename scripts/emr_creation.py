@@ -4,7 +4,7 @@ def lambda_handler(event, context):
     """
     Lambda function to create an EMR cluster and add steps for processing data with Spark.
     """
-    bucket_name = 'st0263-proyecto3'
+    bucket_name = 'st0263-proyecto3'  # Replace with your S3 bucket name
     
     emr_client = boto3.client('emr')
 

@@ -152,7 +152,7 @@ With this, your S3 bucket will have public access and your lambda function will 
    - Runtime: Python 3.12.0
    - Role: LabRole.
    - Copy the content of the [`data_insertion.py`](./scripts/data_insertion.py) file into the Lambda function.
-   - Modify the `BUCKET_NAME`, `COVID_RAW_PREFIX` and `EMR_LAMBDA_NAME` values as your bucket name and the name of the EMR Lambda function you will create later.
+   - Modify the `BUCKET_NAME` and `EMR_LAMBDA_NAME` values as your bucket name and the name of the EMR Lambda function you will create later.
 2. Set up the layer with the following configuration:
    - Runtime: Python 3.12.0
    - Layer name: `ingestion_layer`
@@ -171,7 +171,7 @@ With this, your S3 bucket will have public access and your lambda function will 
   - Use the labrole role.
 4. Click on "Create rule".
 
-### EMR Creation Function
+### EMR Creation Lambda Function
 
 1. Create a Lambda function with the following configuration:
    - Runtime: Python 3.12.0
@@ -184,10 +184,83 @@ With this, your S3 bucket will have public access and your lambda function will 
 
 1. Create a folder in the S3 bucket with the name `scripts`.
 2. Upload the following files to the `scripts` folder:
-   - [`ETL.py`](./scripts/ETL.py)
+   - [`ETL.py`](./scripts/ETL.py): Before uploading it, you must change the `BUCKET_NAME` variable to your bucket name.
    - [`dependencies.sh`](./scripts/dependencies.sh)
    - [`Analytics-EMR.py`](./scripts/Analytics-EMR.py)
 
+### Athena
+
+1. Go to the Amazon Athena console.
+2. Init the editor with `Trino SQL`.
+3. Create the folder `athena_results/` in the S3 bucket. 
+4. Go to the settings and set the `Query result location` to `s3://YOUR_BUCKET_NAME/athena_results/`.
+5. Execute the scripts in the following order, replacing `YOUR-S3-BUCKET` with your bucket name:
+   - [`create_db.sql`](./athena/create_db.sql)
+   - [`create_cluster_summary_table.sql`](./athena/create_cluster_summary_table.sql)
+   - [`create_clusters_table.sql`](./athena/create_clusters_table.sql)
+   - [`create_continent_stats_table.sql`](./athena/create_continent_stats_table.sql)
+   - [`create_correlation_analysis_table.sql`](./athena/create_correlation_analysis_table.sql)
+   - [`create_hdi_analysis_table.sql`](./athena/create_hdi_analysis_table.sql)
+   - [`create_numeric_summary_table.sql`](./athena/create_numeric_summary_table.sql)
+   - [`create_top_countries_table.sql`](./athena/create_top_countries_table.sql)
+
+### Show Results Lambda Function
+
+1. Create a Lambda function with the following configuration:
+   - Runtime: Python 3.12.0
+   - Role: LabRole.
+   - Copy the content of the [`show_results.py`](./scripts/show_results.py) file into the Lambda function.
+   - Modify the `BUCKET_NAME` variable to your bucket name.
+
+### API Gateway
+1. Go to the Amazon API Gateway console.
+2. Create a new API.
+3. Select "HTTP API".
+4. Add the Show Results Lambda function as the integration.
+5. Create a new route with the following configuration:
+   - Method: Post
+   - Resource path: /showResults
+6. Go to the "Stages" tab and create a new stage.
+7. Deploy the API to the new stage.
+8. Copy the endpoint URL and save it for later use.
+9. Open in Postman and create a new request.
+10. Set the method to POST and the URL to the endpoint you copied with the `/showResults` path.
+11. In the body, select "raw" and set the type to JSON.
+12. Paste the following JSON:
+```json
+{
+    "table": "continent_stats"
+}
+```
+You should see a response with the data from the table you selected.
+```
+[
+    {
+        "continent": "Africa",
+        "countries": "57"
+    },
+    {
+        "continent": "Europe",
+        "countries": "51"
+    },
+    {
+        "continent": "Asia",
+        "countries": "48"
+    },
+    {
+        "continent": "North America",
+        "countries": "41"
+    },
+    {
+        "continent": "Oceania",
+        "countries": "24"
+    },
+    {
+        "continent": "South America",
+        "countries": "14"
+    }
+]
+```
 ---
 
 ## Authors

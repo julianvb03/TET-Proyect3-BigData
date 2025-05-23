@@ -5,12 +5,14 @@ spark = SparkSession.builder \
     .appName("Project3_ETL") \
     .getOrCreate()
 
-raw_country_csv = "s3://st0263-proyecto3/test/Country-Data.csv"
-raw_covid_csv   = "s3://st0263-proyecto3/test/Covid-Data.csv"
+BUCKET_NAME = "st0263-proyecto3"
+
+raw_country_csv = f"s3://{BUCKET_NAME}/raw/country_data.csv"
+raw_covid_csv   = f"s3://{BUCKET_NAME}/raw/covid_data.csv"
 
 # S3 output paths,
-trusted_joined_path = "s3://st0263-proyecto3/trusted/joined/"
-analytics_path      = "s3://st0263-proyecto3/trusted/analytics/"
+trusted_joined_path = f"s3://{BUCKET_NAME}/trusted/joined/"
+analytics_path      = f"s3://{BUCKET_NAME}/trusted/analytics/"
 
 df_country = spark.read \
     .option("header", True) \
