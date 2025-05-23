@@ -101,8 +101,8 @@ def lambda_handler(event, context):
         EbsRootVolumeSize=32,
         VisibleToAllUsers=True,
         JobFlowRole='EMR_EC2_DefaultRole',
-        ServiceRole='EMR_DefaultRole',
-        AutoScalingRole='LabRole',
+        ServiceRole='arn:aws:iam::296269837706:role/EMR_DefaultRole',
+        AutoScalingRole='arn:aws:iam::296269837706:role/LabRole',
         ScaleDownBehavior='TERMINATE_AT_TASK_COMPLETION'
     )
 
@@ -110,6 +110,7 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': f"Clúster creado con ID: {cluster_response['JobFlowId']}"
     }
+    
     
     # # Agregar los steps (procesamiento de Spark)
     # steps = [
@@ -120,7 +121,7 @@ def lambda_handler(event, context):
     #             'Jar': 'command-runner.jar',
     #             'Args': [
     #                 'spark-submit',
-    #                 f's3://{bucket_name}/scripts/mi_script_spark.py',
+    #                 f's3://{bucket_name}/scripts/emr_steps.py',
     #                 bucket_name  # Parámetros adicionales, como el nombre del archivo
     #             ]
     #         }

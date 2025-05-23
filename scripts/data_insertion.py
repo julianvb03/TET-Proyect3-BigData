@@ -7,7 +7,7 @@ s3_client = boto3.client('s3')
 lambda_client = boto3.client('lambda')
 
 BUCKET_NAME = 'st0263-proyecto3'
-COVID_RAW_PREFIX = 'testing/covid/'
+COVID_RAW_PREFIX = 'raw/covid/'
 EMR_LAMBDA_NAME = 'crearClusterEMR'
 
 def lambda_handler(event, context):
