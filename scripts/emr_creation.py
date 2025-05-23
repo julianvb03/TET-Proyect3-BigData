@@ -5,9 +5,7 @@ def lambda_handler(event, context):
     Lambda function to create an EMR cluster and add steps for processing data with Spark.
     """
     bucket_name = 'st0263-proyecto3'
-    region = 'us-east-1'
     
-    # Create a session with the specified region
     emr_client = boto3.client('emr')
 
     # Create the EMR cluster
@@ -31,12 +29,6 @@ def lambda_handler(event, context):
                 'Properties': {
                     'hive.metastore.client.factory.class': 'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory'
                 }
-            },
-            {
-              "Classification": "core-site",
-              "Properties": {
-                "fs.s3.consistent": "false"
-              }
             }
         ],
         Instances={
@@ -128,6 +120,20 @@ def lambda_handler(event, context):
                         'spark-submit',
                         '--deploy-mode', 'cluster',
                         f's3://{bucket_name}/scripts/ETL.py',
+                    ]
+                }
+            },
+            {
+                'Name': 'Analytics',
+                'ActionOnFailure': 'TERMINATE_CLUSTER',
+                'HadoopJarStep': {
+                    'Jar': 'command-runner.jar',
+                    'Args': [
+                        'spark-submit',
+                        '--deploy-mode', 'client',
+                        f's3://{bucket_name}/scripts/Analytics-EMR.py',
+                        '--data_source', f's3://{bucket_name}/trusted/joined/',
+                        '--output_uri', f's3://{bucket_name}/refined/'
                     ]
                 }
             }

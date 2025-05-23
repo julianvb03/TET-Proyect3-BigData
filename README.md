@@ -186,6 +186,7 @@ With this, your S3 bucket will have public access and your lambda function will 
 2. Upload the following files to the `scripts` folder:
    - [`ETL.py`](./scripts/ETL.py)
    - [`dependencies.sh`](./scripts/dependencies.sh)
+   - [`Analytics-EMR.py`](./scripts/Analytics-EMR.py)
 
 ---
 
