@@ -13,7 +13,7 @@ def lambda_handler(event, context):
     # Create the EMR cluster
     cluster_response = emr_client.run_job_flow(
         Name='Project3-Cloned',
-        LogUri=f's3://aws-logs-296269837706-us-east-1/elasticmapreduce',
+        LogUri=f's3://{bucket_name}/elasticmapreduce',	
         ReleaseLabel='emr-7.3.0',
         Applications=[
             {'Name': 'HBase'},
@@ -31,6 +31,12 @@ def lambda_handler(event, context):
                 'Properties': {
                     'hive.metastore.client.factory.class': 'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory'
                 }
+            },
+            {
+              "Classification": "core-site",
+              "Properties": {
+                "fs.s3.consistent": "false"
+              }
             }
         ],
         Instances={
@@ -91,7 +97,7 @@ def lambda_handler(event, context):
                 }
             ],
             'Ec2KeyName': 'vockey',
-            'KeepJobFlowAliveWhenNoSteps': True,
+            'KeepJobFlowAliveWhenNoSteps': False,
             'TerminationProtected': False,
             'EmrManagedMasterSecurityGroup': 'sg-02a314a7008e9e131',
             'EmrManagedSlaveSecurityGroup': 'sg-059776e19481dae34',
@@ -103,31 +109,32 @@ def lambda_handler(event, context):
         JobFlowRole='EMR_EC2_DefaultRole',
         ServiceRole='arn:aws:iam::296269837706:role/EMR_DefaultRole',
         AutoScalingRole='arn:aws:iam::296269837706:role/LabRole',
-        ScaleDownBehavior='TERMINATE_AT_TASK_COMPLETION'
+        ScaleDownBehavior='TERMINATE_AT_TASK_COMPLETION',
+        Steps=[
+            {
+                'Name': 'addDependencies',
+                'ActionOnFailure': 'TERMINATE_CLUSTER',
+                'HadoopJarStep': {
+                    'Jar': 's3://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar',
+                    'Args': [f's3://{bucket_name}/scripts/dependencies.sh']
+                }
+            },
+            {
+                'Name': 'ETL',
+                'ActionOnFailure': 'TERMINATE_CLUSTER',
+                'HadoopJarStep': {
+                    'Jar': 'command-runner.jar',
+                    'Args': [
+                        'spark-submit',
+                        '--deploy-mode', 'cluster',
+                        f's3://{bucket_name}/scripts/ETL.py',
+                    ]
+                }
+            }
+        ]
     )
 
     return {
         'statusCode': 200,
         'body': f"Clúster creado con ID: {cluster_response['JobFlowId']}"
     }
-    
-    
-    # # Agregar los steps (procesamiento de Spark)
-    # steps = [
-    #     {
-    #         'Name': 'ProcesarDatosSpark',
-    #         'ActionOnFailure': 'CONTINUE',
-    #         'HadoopJarStep': {
-    #             'Jar': 'command-runner.jar',
-    #             'Args': [
-    #                 'spark-submit',
-    #                 f's3://{bucket_name}/scripts/emr_steps.py',
-    #                 bucket_name  # Parámetros adicionales, como el nombre del archivo
-    #             ]
-    #         }
-    #     }
-    # ]
-
-    # # Ejecutar los steps en el clúster EMR
-    # emr_client.add_job_flow_steps(JobFlowId=cluster_id, Steps=steps)
-    # print("Steps añadidos al clúster.")
