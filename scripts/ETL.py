@@ -42,11 +42,3 @@ df_transformed = df_joined.withColumn(
     .partitionBy("continent")
     .parquet(trusted_joined_path)
 )
-
-(df_transformed
-    .repartition(4)
-    .write
-    .mode("overwrite")
-    .partitionBy("continent")
-    .csv(trusted_joined_path)
-)
