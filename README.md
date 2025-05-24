@@ -37,12 +37,14 @@ graph TD
     IngestData -->|Pulls from| ArchivoCSV
     IngestData -->|Pulls from| ExternalDB
 
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef awsService fill:#ff9900,stroke:#333,stroke-width:2px;
-    classDef awsStorage fill:#2db34a,stroke:#333,stroke-width:2px;
-    classDef lambda fill:#ffcc00,stroke:#333,stroke-width:2px;
-    classDef emr fill:#0073bb,stroke:#333,stroke-width:2px;
-    classDef external fill:#bb2525,stroke:#333,stroke-width:2px;
+    %% Estilos mejorados
+    classDef client fill:#E9D5FF,stroke:#6B21A8,stroke-width:2px,color:#1E1B4B;
+    classDef awsService fill:#FACC15,stroke:#92400E,stroke-width:2px,color:#1E1B4B;
+    classDef awsStorage fill:#34D399,stroke:#065F46,stroke-width:2px,color:#1E1B4B;
+    classDef lambda fill:#FBBF24,stroke:#92400E,stroke-width:2px,color:#1E1B4B;
+    classDef emr fill:#60A5FA,stroke:#1E3A8A,stroke-width:2px,color:#1E1B4B;
+    classDef external fill:#F87171,stroke:#991B1B,stroke-width:2px,color:#1E1B4B;
+
 ```
 
 ---
