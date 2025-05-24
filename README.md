@@ -1,43 +1,42 @@
 # Project 3 – Batch Architecture for Big Data (ST0263 - EAFIT)
 
-## General Description
-This project implements a big data example that automates the complete process of capturing, ingesting, processing, and outputting actionable data using AWS services.
+## 🧠 General Overview
+This project showcases a complete batch data processing pipeline using AWS services. It automates the capture, ingestion, transformation, analysis, and visualization of COVID-19 data.
 
-## Architecture
+---
+
+## 🏗️ Architecture Diagram
 
 ```mermaid
 graph TD
-    %% Node Definition
-    Client[("Client A<br>Accede a datos de COVID-19")]:::client
+    Client[("Client A<br>Accesses COVID-19 Data")]:::client
     subgraph AWS_Academy[AWS Academy]
-        Athena{{"Athena/API Gateway<br>Acceso a datos procesados"}}:::awsService
-        CloudWatch["CloudWatch<br>Trigger para jobs programados"]:::awsService
+        Athena{{"Athena / API Gateway<br>Processed Data Access"}}:::awsService
+        CloudWatch["CloudWatch<br>Triggers Scheduled Jobs"]:::awsService
         S3[("S3 BigData Bucket<br>Raw, Trusted, Refined")]:::awsStorage
         subgraph Lambda[AWS Lambda]
-            ShowResults["Show Results<br>Muestra datos procesados"]:::lambda
-            IngestData["Ingest Data<br>Ingesta desde servicios externos"]:::lambda
-            CreateEMR["Create EMR<br>Crea y configura clúster EMR"]:::lambda
+            ShowResults["Show Results<br>Returns Processed Data"]:::lambda
+            IngestData["Ingest Data<br>From External Sources"]:::lambda
+            CreateEMR["Create EMR<br>Launch and Configure Cluster"]:::lambda
         end
         subgraph EMR[AWS EMR]
             Steps["Steps<br>ETL, SparkSQL, ML"]:::emr
         end
 
-        ExternalDB[("External DB<br>Base de datos simulada")]:::external
+        ExternalDB[("External DB<br>Simulated DB")]:::external
     end
-    ArchivoCSV["Archivo CSV<br>Datos de COVID-19"]:::external
+    ArchivoCSV["CSV File<br>COVID-19 Dataset"]:::external
 
-    %% Relaciones
-    Client -->|Accede| Athena
-    Athena -->|Muestra| ShowResults
-    IngestData -->|Almacena raw| S3
-    Steps -->|Almacena trusted/refined| S3
-    CloudWatch -->|Dispara| IngestData
-    IngestData -->|Dispara| CreateEMR
-    CreateEMR -->|Crea y dispara| EMR
-    IngestData -->|Recupera desde| ArchivoCSV
-    IngestData -->|Recupera desde| ExternalDB
+    Client -->|Queries| Athena
+    Athena -->|Displays| ShowResults
+    IngestData -->|Stores Raw| S3
+    Steps -->|Stores Trusted/Refined| S3
+    CloudWatch -->|Triggers| IngestData
+    IngestData -->|Invokes| CreateEMR
+    CreateEMR -->|Starts| EMR
+    IngestData -->|Pulls from| ArchivoCSV
+    IngestData -->|Pulls from| ExternalDB
 
-    %% Estilos
     classDef client fill:#f9f,stroke:#333,stroke-width:2px;
     classDef awsService fill:#ff9900,stroke:#333,stroke-width:2px;
     classDef awsStorage fill:#2db34a,stroke:#333,stroke-width:2px;
@@ -46,229 +45,82 @@ graph TD
     classDef external fill:#bb2525,stroke:#333,stroke-width:2px;
 ```
 
-
-## Tasks
-### Inicial Setup
-- [ ] Create S3 bucket: Zoned (Raw, Trusted and Refined)
-
-### Capture and Ingestion
-- [ ] Develop script to download data from URL/files about COVID-19
-- [ ] Implement relational database (MySQL/PostgreSQL in RDS)
-- [ ] Create script to extract data from the relational database
-- [ ] Automate ingestion to S3 Raw using Lambda and EventBridge
-- [ ] Implement duplicate check in the Raw zone
-
-### ETL Processing
-- [ ] Develop PySpark scripts for data cleaning and joining
-- [ ] Automate EMR cluster creation (CLI/CloudFormation)
-- [ ] Configure EMR Steps for automatic ETL execution
-- [ ] Define storage structure in S3 Trusted
-
-### Advanced Analytics
-- [ ] Implement descriptive analysis scripts with SparkSQL
-- [ ] Develop ML pipeline with SparkML
-- [ ] Configure EMR Steps for analysis and storage in S3 Refined
-- [ ] Define dependencies between ETL Steps and analytics
-
-### Visualization and Access
-- [ ] Configure AWS Athena for queries on S3 Refined
-- [ ] Create API Gateway with Lambda backend for programmatic access
-- [ ] Implement test client for the API
-
-### Orchestration and Automation
-- [ ] Integrate complete flow with AWS Step Functions
-- [ ] Schedule periodic executions using EventBridge
-- [ ] Configure alerts and monitoring with CloudWatch
-- [ ] Create monitoring dashboard in AWS
 ---
 
-## Setup
+## ✅ Task Checklist
 
-### :floppy_disk: Bucket S3
+### 📦 Initial Setup
+- [ ] Create an S3 bucket with zones: Raw, Trusted, and Refined.
 
-Create a bucket in S3 with the name you want `YOUR_BUCKET_NAME` and the following structure
+### 🔽 Capture & Ingestion
+- [ ] Script to download COVID-19 data.
+- [ ] Set up PostgreSQL (RDS) and import CSV.
+- [ ] Extract data from DB into S3 Raw using Lambda.
+- [ ] Add duplicate check in Raw zone.
 
-1. Go to the S3 console.
-2. Click on "Create bucket".
-3. Enter the bucket name `YOUR_BUCKET_NAME`.
-4. Choose the region (e.g., `us-east-1`).
-5. Uncheck "Block all public access".
-6. Click on "Create bucket".
-7. Select the bucket you just created.
-8. Click on "Permissions" tab.
-9. On the "Bucket policy" section, click on "Edit".
-10. Paste the following policy, replacing `YOUR_BUCKET_NAME` with your bucket name:
+### ⚙️ ETL Processing
+- [ ] Clean and join data with PySpark.
+- [ ] Launch EMR via CLI or Lambda.
+- [ ] Define and run EMR steps.
+- [ ] Organize data into S3 Trusted zone.
 
-```json
-{
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Sid": "AllowAllLambdaPutObject",
-			"Effect": "Allow",
-			"Principal": "*",
-			"Action": "s3:PutObject",
-			"Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*"
-		},
-		{
-			"Sid": "AllowDeleteObjects",
-			"Effect": "Allow",
-			"Principal": "*",
-			"Action": [
-				"s3:DeleteObject",
-				"s3:AbortMultipartUpload"
-			],
-			"Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*"
-		},
-		{
-			"Sid": "AllowPublicRead",
-			"Effect": "Allow",
-			"Principal": "*",
-			"Action": "s3:GetObject",
-			"Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*"
-		},
-		{
-			"Sid": "AllowListBucket",
-			"Effect": "Allow",
-			"Principal": "*",
-			"Action": "s3:ListBucket",
-			"Resource": "arn:aws:s3:::YOUR_BUCKET_NAME"
-		}
-	]
-}
-```
+### 📊 Advanced Analytics
+- [ ] Use SparkSQL for descriptive statistics.
+- [ ] Train models using SparkML.
+- [ ] Save analytics output in S3 Refined zone.
+- [ ] Link ETL and ML steps in EMR.
 
-With this, your S3 bucket will have public access and your lambda function will be able to upload files to it.
+### 📈 Visualization & API Access
+- [ ] Set up Athena for querying S3.
+- [ ] Create Lambda-backed API Gateway.
+- [ ] Test API with Postman.
 
-### RDS (Relational Database Service)
+### 🔁 Automation & Monitoring
+- [ ] Use AWS Step Functions to orchestrate.
+- [ ] Schedule runs with EventBridge.
+- [ ] Monitor using CloudWatch.
+- [ ] Build dashboard for observability.
 
-1. Create the RDS instance with PostgreSQL.
-2. Create a database named `covid_data`.
-3. Import the CSV file into the database at [`country_data.csv`](./data/country_data.csv).
-
-### Ingestion Lambda Function
-
-1. Create a Lambda function with the following configuration:
-   - Runtime: Python 3.12.0
-   - Role: LabRole.
-   - Copy the content of the [`data_insertion.py`](./scripts/data_insertion.py) file into the Lambda function.
-   - Modify the `BUCKET_NAME` and `EMR_LAMBDA_NAME` values as your bucket name and the name of the EMR Lambda function you will create later.
-2. Set up the layer with the following configuration:
-   - Runtime: Python 3.12.0
-   - Layer name: `ingestion_layer`
-   - Upload the zip file from [`ingestion_layer.zip`](./layers/ingestion_layer.zip) to the layer.
-3. Add the layer to the Lambda function.
-4. Deploy the Lambda function.
-
-### CloudWatch EventBridge
-
-1. Go to the Amazon EventBridge console.
-2. Click on the "Programmatic access" tab.
-3. Click on "Create programmatic access".
-  - Select "Recurring schedule".
-  - Set the range to 1 hour.
-  - Select the lambda function you created in the previous step.
-  - Use the labrole role.
-4. Click on "Create rule".
-
-### EMR Creation Lambda Function
-
-1. Create a Lambda function with the following configuration:
-   - Runtime: Python 3.12.0
-   - Role: LabRole.
-   - Copy the content of the [`emr_creation.py`](./scripts/emr_creation.py) file into the Lambda function.
-   - Modify the `bucket_name` for the respective bucket name of your AWS account.
-   - Modify the json value for `ServiceRole` and `AutoScalingRole` matching the IAM roles you created of your account.
-
-### EMR Steps
-
-1. Create a folder in the S3 bucket with the name `scripts`.
-2. Upload the following files to the `scripts` folder:
-   - [`ETL.py`](./scripts/ETL.py): Before uploading it, you must change the `BUCKET_NAME` variable to your bucket name.
-   - [`dependencies.sh`](./scripts/dependencies.sh)
-   - [`Analytics-EMR.py`](./scripts/Analytics-EMR.py)
-
-### Athena
-
-1. Go to the Amazon Athena console.
-2. Init the editor with `Trino SQL`.
-3. Create the folder `athena_results/` in the S3 bucket. 
-4. Go to the settings and set the `Query result location` to `s3://YOUR_BUCKET_NAME/athena_results/`.
-5. Execute the scripts in the following order, replacing `YOUR-S3-BUCKET` with your bucket name:
-   - [`create_db.sql`](./athena/create_db.sql)
-   - [`create_cluster_summary_table.sql`](./athena/create_cluster_summary_table.sql)
-   - [`create_clusters_table.sql`](./athena/create_clusters_table.sql)
-   - [`create_continent_stats_table.sql`](./athena/create_continent_stats_table.sql)
-   - [`create_correlation_analysis_table.sql`](./athena/create_correlation_analysis_table.sql)
-   - [`create_hdi_analysis_table.sql`](./athena/create_hdi_analysis_table.sql)
-   - [`create_numeric_summary_table.sql`](./athena/create_numeric_summary_table.sql)
-   - [`create_top_countries_table.sql`](./athena/create_top_countries_table.sql)
-
-### Show Results Lambda Function
-
-1. Create a Lambda function with the following configuration:
-   - Runtime: Python 3.12.0
-   - Role: LabRole.
-   - Copy the content of the [`show_results.py`](./scripts/show_results.py) file into the Lambda function.
-   - Modify the `BUCKET_NAME` variable to your bucket name.
-
-### API Gateway
-1. Go to the Amazon API Gateway console.
-2. Create a new API.
-3. Select "HTTP API".
-4. Add the Show Results Lambda function as the integration.
-5. Create a new route with the following configuration:
-   - Method: Post
-   - Resource path: /showResults
-6. Go to the "Stages" tab and create a new stage.
-7. Deploy the API to the new stage.
-8. Copy the endpoint URL and save it for later use.
-9. Open in Postman and create a new request.
-10. Set the method to POST and the URL to the endpoint you copied with the `/showResults` path.
-11. In the body, select "raw" and set the type to JSON.
-12. Paste the following JSON:
-```json
-{
-    "table": "continent_stats"
-}
-```
-You should see a response with the data from the table you selected.
-```
-[
-    {
-        "continent": "Africa",
-        "countries": "57"
-    },
-    {
-        "continent": "Europe",
-        "countries": "51"
-    },
-    {
-        "continent": "Asia",
-        "countries": "48"
-    },
-    {
-        "continent": "North America",
-        "countries": "41"
-    },
-    {
-        "continent": "Oceania",
-        "countries": "24"
-    },
-    {
-        "continent": "South America",
-        "countries": "14"
-    }
-]
-```
 ---
 
-## Authors
-**Nombres:** 
-	- Juan Felipe Restrepo Buitrago
-	- Kevin Quiroz González
-	- Julian Estiven Valencia Bolaños
-	- Julian Agudelo Cifuentes
-**Curso:** ST0263 - Tópicos Especiales en Telemática  
-**Universidad:** EAFIT  
-**Periodo:** 2025-1
+## 🔧 Setup Instructions
+
+### S3 Bucket Configuration
+Follow instructions to create the S3 bucket and attach the required bucket policy (see original version).
+
+### PostgreSQL RDS Setup
+1. Create DB named `covid_data`.
+2. Upload `country_data.csv` into the DB.
+
+### Lambda Ingestion
+Set up a Lambda function with the code in `scripts/data_insertion.py`, update environment variables, attach the layer (`ingestion_layer.zip`) and set a CloudWatch trigger.
+
+### EMR Lambda Setup
+Configure a Lambda using `scripts/emr_creation.py`, adjust IAM roles and bucket names.
+
+### EMR Scripts Upload
+Create a `scripts/` folder in S3. Upload:
+- `ETL.py` (edit bucket name)
+- `dependencies.sh`
+- `Analytics-EMR.py`
+
+### Athena Setup
+Create database and tables using provided SQL scripts. Set `athena_results/` as query output.
+
+### Lambda for Results
+Create `show_results.py` Lambda to fetch Athena results based on table names.
+
+### API Gateway Integration
+Expose the `showResults` Lambda via HTTP POST route `/showResults`. Test using Postman.
+
+---
+
+## 👥 Authors
+- **Juan Felipe Restrepo Buitrago**
+- **Kevin Quiroz González**
+- **Julian Estiven Valencia Bolaños**
+- **Julian Agudelo Cifuentes**
+
+**Course:** ST0263 – Special Topics in Telematics  
+**University:** EAFIT  
+**Term:** 2025-1
