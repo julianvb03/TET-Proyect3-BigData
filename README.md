@@ -52,25 +52,25 @@ graph TD
 ## ✅ Task Checklist
 
 ### 📦 Initial Setup
-- [ ] Create an S3 bucket with zones: Raw, Trusted, and Refined.
+- [X] Create an S3 bucket with zones: Raw, Trusted, and Refined.
 
 ### 🔽 Capture & Ingestion
-- [ ] Script to download COVID-19 data.
-- [ ] Set up PostgreSQL (RDS) and import CSV.
-- [ ] Extract data from DB into S3 Raw using Lambda.
-- [ ] Add duplicate check in Raw zone.
+- [X] Script to download COVID-19 data.
+- [X] Set up PostgreSQL (RDS) and import CSV.
+- [X] Extract data from DB into S3 Raw using Lambda.
+- [X] Add duplicate check in Raw zone.
 
 ### ⚙️ ETL Processing
-- [ ] Clean and join data with PySpark.
-- [ ] Launch EMR via CLI or Lambda.
-- [ ] Define and run EMR steps.
-- [ ] Organize data into S3 Trusted zone.
+- [X] Clean and join data with PySpark.
+- [X] Launch EMR via CLI or Lambda.
+- [X] Define and run EMR steps.
+- [X] Organize data into S3 Trusted zone.
 
 ### 📊 Advanced Analytics
-- [ ] Use SparkSQL for descriptive statistics.
-- [ ] Train models using SparkML.
-- [ ] Save analytics output in S3 Refined zone.
-- [ ] Link ETL and ML steps in EMR.
+- [X] Use SparkSQL for descriptive statistics.
+- [X] Train models using SparkML.
+- [X] Save analytics output in S3 Refined zone.
+- [X] Link ETL and ML steps in EMR.
 
 ### 📈 Visualization & API Access
 - [ ] Set up Athena for querying S3.
