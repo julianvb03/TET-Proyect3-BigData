@@ -21,3 +21,13 @@ __pycache__/
 
 # Ignore python libraries
 layers/lib/
+
+#Macos
+.DS_Store
+
+#Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+.DS_Store
