@@ -95,7 +95,7 @@ Follow instructions to create the S3 bucket and attach the required bucket polic
 2. Upload `country_data.csv` into the DB.
 
 ### Lambda Ingestion
-Set up a Lambda function with the code in `scripts/data_insertion.py`, update environment variables, attach the layer (`ingestion_layer.zip`) and set a CloudWatch trigger.
+Set up a Lambda function with the code in `scripts/data_insertion.py`, attach the layer (`ingestion_layer.zip`) and set a CloudWatch trigger.
 
 ### EMR Lambda Setup
 Configure a Lambda using `scripts/emr_creation.py`, adjust IAM roles and bucket names.
