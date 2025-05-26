@@ -73,15 +73,15 @@ graph TD
 - [X] Link ETL and ML steps in EMR.
 
 ### 📈 Visualization & API Access
-- [ ] Set up Athena for querying S3.
-- [ ] Create Lambda-backed API Gateway.
-- [ ] Test API with Postman.
+- [X] Set up Athena for querying S3.
+- [X] Create Lambda-backed API Gateway.
+- [X] Test API with Postman.
 
 ### 🔁 Automation & Monitoring
-- [ ] Use AWS Step Functions to orchestrate.
-- [ ] Schedule runs with EventBridge.
-- [ ] Monitor using CloudWatch.
-- [ ] Build dashboard for observability.
+- [X] Use AWS Step Functions to orchestrate.
+- [X] Schedule runs with EventBridge.
+- [X] Monitor using CloudWatch.
+- [X] Build dashboard for observability.
 
 ---
 
@@ -164,7 +164,7 @@ With this, your S3 bucket will have public access and your lambda function will 
    - Runtime: Python 3.12.0
    - Role: LabRole.
    - Copy the content of the [`data_insertion.py`](./scripts/data_insertion.py) file into the Lambda function.
-   - Modify the `BUCKET_NAME` and `GLUE_WORKFLOW_NAME` values as your bucket name and the name of your Glue workflow.
+   - Modify the `BUCKET_NAME` and `LAMBDA_FUNCTION_NAME` values as your bucket name and the name of your Lambda function that creates the EMR cluster.
 2. Set up the layer with the following configuration:
    - Runtime: Python 3.12.0
    - Layer name: `PandasLayer`.
@@ -176,36 +176,6 @@ With this, your S3 bucket will have public access and your lambda function will 
 3. Add the layers to the Lambda function.
 4. Deploy the Lambda function.
 5. Go to settings and set the timeout to 45 seconds.
-
-### Glue Job Setup
-1. Go to the AWS Glue console.
-2. Click on "Jobs" in the left sidebar.
-3. Click on "Add job".
-4. Enter the following configuration:
-   - Name: `project3-etl-job`.
-   - IAM Role: `LabRole`.
-   - Type: Spark.
-   - Glue version: 4.0. - Supports spark 3.3, Scala 2, Python 3
-   - Python version: 3.
-   - Worker type: G.1X.
-   - Number of workers: 3.
-5. Add the code at [`ETL.py`](./scripts/ETL.py) to the job script.
-6. Modify the `BUCKET_NAME` variables to your bucket name and the name of your Lambda function to create the EMR cluster.
-7. Add a second job as Python shell with the following configuration:
-   - Name: `project3-trigger-job`.
-   - IAM Role: `LabRole`.
-   - Type: Python shell.
-   - Python version: 3.
-8. Add the code at [`trigger.py`](./scripts/trigger.py) to the job script.
-9. Modify the `LAMBDA_FUNCTION_NAME` variable to the name of your Lambda function that creates the EMR cluster.
-10. Go to Workflows in the left sidebar.
-11. Click on "Add workflow".
-12. Enter the following configuration:
-    - Name: `project3-workflow`.
-    - IAM Role: `LabRole`.
-13. Add an On-Demand trigger to the workflow.
-14. Add the `project3-etl-job` job to the workflow.
-15. Add an event trigger after the `project3-etl-job` job to trigger the `project3-trigger-job` job.
 
 ### EMR Lambda Setup
 1. Create a Lambda function with the following configuration:
@@ -220,6 +190,7 @@ With this, your S3 bucket will have public access and your lambda function will 
 2. Upload the following files to the `scripts` folder:
    - [`dependencies.sh`](./scripts/dependencies.sh)
    - [`Analytics-EMR.py`](./scripts/Analytics-EMR.py)
+   - [`ETL.py`](./scripts/ETL.py). Modify the `BUCKET_NAME` variable to your bucket name.
 
 ### Athena Setup
 1. Go to the Amazon Athena console.
