@@ -1,8 +1,8 @@
 CREATE EXTERNAL TABLE IF NOT EXISTS correlation_analysis (
   continent string,
-  hdi_cases_correlation double,
-  gdp_cases_correlation double,
-  density_cases_correlation double,
+  hdi_cases_correlation string,
+  gdp_cases_correlation string,
+  density_cases_correlation string,
   country_count int,
   avg_hdi double,
   avg_gdp double

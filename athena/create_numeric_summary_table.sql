@@ -1,9 +1,9 @@
 CREATE EXTERNAL TABLE IF NOT EXISTS numeric_summary (
   total_records int,
   avg_total_cases double,
-  max_total_cases bigint,
+  max_total_cases string,
   avg_total_deaths double,
-  max_total_deaths bigint,
+  max_total_deaths string,
   avg_population double,
   max_population bigint,
   avg_cases_per_thousand double,

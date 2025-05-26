@@ -1,7 +1,7 @@
 CREATE EXTERNAL TABLE IF NOT EXISTS top_countries (
   location string,
   continent string,
-  total_cases bigint,
+  total_cases string,
   population bigint,
   cases_per_thousand double
 )

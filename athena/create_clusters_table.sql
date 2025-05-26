@@ -2,7 +2,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS clusters (
   location string,
   continent string,
   cluster int,
-  human_development_index int,
+  human_development_index double,
   gdp_per_capita double,
   cases_per_thousand double
 )
