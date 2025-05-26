@@ -102,13 +102,26 @@ def lambda_handler(event, context):
         ServiceRole='arn:aws:iam::296269837706:role/EMR_DefaultRole',
         AutoScalingRole='arn:aws:iam::296269837706:role/LabRole',
         ScaleDownBehavior='TERMINATE_AT_TASK_COMPLETION',
+        BootstrapActions=[
+            {
+                'Name': 'Dependencies',
+                'ScriptBootstrapAction': {
+                    'Path': f's3://{bucket_name}/scripts/dependencies.sh',
+                    'Args': []
+                }
+            },
+        ],
         Steps=[
             {
-                'Name': 'addDependencies',
+                'Name': 'ETL',
                 'ActionOnFailure': 'TERMINATE_CLUSTER',
                 'HadoopJarStep': {
-                    'Jar': 's3://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar',
-                    'Args': [f's3://{bucket_name}/scripts/dependencies.sh']
+                    'Jar': 'command-runner.jar',
+                    'Args': [
+                        'spark-submit',
+                        '--deploy-mode', 'cluster',
+                        f's3://{bucket_name}/scripts/ETL.py',
+                    ]
                 }
             },
             {

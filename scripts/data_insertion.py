@@ -6,7 +6,7 @@ from io import StringIO
 
 BUCKET_NAME = "st0263-proyecto3"
 GITHUB_CSV_URL = "https://raw.githubusercontent.com/julianvb03/TET-Proyect3-BigData/refs/heads/main/data/covid_data.csv"
-GLUE_WORKFLOW_NAME = "run_ETL"
+LAMBDA_FUNCTION_NAME = "crearClusterEMR"
 
 def lambda_handler(event, context):
     response = requests.get(GITHUB_CSV_URL)
@@ -41,8 +41,12 @@ def lambda_handler(event, context):
     )
     print("✅ Archivo desde PostgreSQL subido correctamente a S3.")
     
-    glue = boto3.client('glue')
-    response = glue.start_workflow_run(Name=GLUE_WORKFLOW_NAME)
-    print(f"🚀 Workflow iniciado: runId = {response['RunId']}")
+    client = boto3.client("lambda", region_name="us-east-1")
+    response = client.invoke(
+        FunctionName=LAMBDA_FUNCTION_NAME,
+        InvocationType="Event"
+    )
+    
+    print(f"✅ Lambda invoked. Status code: {response['StatusCode']}")
 
     return {"status": "success"}
