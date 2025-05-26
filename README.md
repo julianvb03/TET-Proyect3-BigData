@@ -188,9 +188,9 @@ With this, your S3 bucket will have public access and your lambda function will 
 ### EMR Scripts Upload
 1. Create a folder in the S3 bucket with the name `scripts`.
 2. Upload the following files to the `scripts` folder:
-   - [`dependencies.sh`](./scripts/dependencies.sh)
-   - [`Analytics-EMR.py`](./scripts/Analytics-EMR.py)
-   - [`ETL.py`](./scripts/ETL.py). Modify the `BUCKET_NAME` variable to your bucket name.
+   - [`dependencies.sh`](./scripts/dependencies.sh) (This will be used as a Bootstrap Action)
+   - [`Analytics-EMR.py`](./scripts/Analytics-EMR.py) (This will be used as a EMR step)
+   - [`ETL.py`](./scripts/ETL.py). Modify the `BUCKET_NAME` variable to your bucket name. (This will be used as a EMR step)
 
 ### Athena Setup
 1. Go to the Amazon Athena console.
@@ -263,6 +263,191 @@ You should see a response with the data from the table you selected.
     }
 ]
 ```
+
+---
+# :hourglass: Detailed Information
+
+## EMR clouster creation
+
+The EMR cluster is created using [`emr_creation.py`](./scripts/emr_creation.py) script. This script is executed by an AWS Lambda function, which is triggered automatically every hour in our specific setup. Within the script, all configuration details of the cluster are defined. This is done by using the EMR client provided by Python’s boto3 library. One of the most important parameters in this process specifies the configuration, number, and type of Amazon EC2 instances that will make up the cluster.
+``` python
+Instances={
+            'InstanceGroups': [
+                {
+                    'Name': 'Core',
+                    'Market': 'ON_DEMAND',
+                    'InstanceRole': 'CORE',
+                    'InstanceType': 'm5.xlarge',
+                    'InstanceCount': 2,
+                    'EbsConfiguration': {
+                        'EbsBlockDeviceConfigs': [
+                            {
+                                'VolumeSpecification': {
+                                    'VolumeType': 'gp2',
+                                    'SizeInGB': 32
+                                },
+                                'VolumesPerInstance': 2
+                            }
+                        ]
+                    }
+                },
+                {
+                    'Name': 'Task - 1',
+                    'Market': 'ON_DEMAND',
+                    'InstanceRole': 'TASK',
+                    'InstanceType': 'm5.xlarge',
+                    'InstanceCount': 1,
+                    'EbsConfiguration': {
+                        'EbsBlockDeviceConfigs': [
+                            {
+                                'VolumeSpecification': {
+                                    'VolumeType': 'gp2',
+                                    'SizeInGB': 32
+                                },
+                                'VolumesPerInstance': 2
+                            }
+                        ]
+                    }
+                },
+                {
+                    'Name': 'Primary',
+                    'Market': 'ON_DEMAND',
+                    'InstanceRole': 'MASTER',
+                    'InstanceType': 'm5.xlarge',
+                    'InstanceCount': 1,
+                    'EbsConfiguration': {
+                        'EbsBlockDeviceConfigs': [
+                            {
+                                'VolumeSpecification': {
+                                    'VolumeType': 'gp2',
+                                    'SizeInGB': 32
+                                },
+                                'VolumesPerInstance': 2
+                            }
+                        ]
+                    }
+                }
+            ],
+            'Ec2KeyName': 'vockey',
+            'KeepJobFlowAliveWhenNoSteps': False,
+            'TerminationProtected': False,
+            'EmrManagedMasterSecurityGroup': 'sg-02a314a7008e9e131',
+            'EmrManagedSlaveSecurityGroup': 'sg-059776e19481dae34',
+            'InstanceFleets': [],
+            'Ec2SubnetIds': ['subnet-00b2bd144141a60bc']
+        },
+        EbsRootVolumeSize=32,
+        VisibleToAllUsers=True,
+        JobFlowRole='EMR_EC2_DefaultRole',
+        ServiceRole='arn:aws:iam::296269837706:role/EMR_DefaultRole',
+        AutoScalingRole='arn:aws:iam::296269837706:role/LabRole',
+        ScaleDownBehavior='TERMINATE_AT_TASK_COMPLETION',
+        BootstrapActions=[
+            {
+                'Name': 'Dependencies',
+                'ScriptBootstrapAction': {
+                    'Path': f's3://{bucket_name}/scripts/dependencies.sh',
+                    'Args': []
+                }
+            },
+        ]
+```
+Other fundamental parameters for achieving the project’s objectives are `BootstrapActions` and Steps. These define the actions to be executed during the cluster creation process—specifically, just before the installation of the selected applications `(BootstrapActions)`. In our case, the bootstrap actions are used to install the necessary dependencies for the correct execution of the [`Analytics-EMR.py`](./scripts/Analytics-EMR.py) script.
+
+The `Steps`, on the other hand, allow us to simulate big data processing on an `EMR` cluster using data stored in S3. In our implementation, this involves simulating an `ETL` process over raw S3 data with the [`ETL.py`](./scripts/ETL.py) script, which saves the data in the `Trusted` zone. This script transforms the data into a suitable format for analytics and machine learning tasks, which are then performed using the [`Analytics-EMR.py`](./scripts/Analytics-EMR.py) script, finally saves the data in the `Refined` zone.
+``` python
+BootstrapActions=[
+            {
+                'Name': 'Dependencies',
+                'ScriptBootstrapAction': {
+                    'Path': f's3://{bucket_name}/scripts/dependencies.sh',
+                    'Args': []
+                }
+            },
+        ],
+        Steps=[
+            {
+                'Name': 'ETL',
+                'ActionOnFailure': 'TERMINATE_CLUSTER',
+                'HadoopJarStep': {
+                    'Jar': 'command-runner.jar',
+                    'Args': [
+                        'spark-submit',
+                        '--deploy-mode', 'cluster',
+                        f's3://{bucket_name}/scripts/ETL.py',
+                    ]
+                }
+            },
+            {
+                'Name': 'Analytics',
+                'ActionOnFailure': 'TERMINATE_CLUSTER',
+                'HadoopJarStep': {
+                    'Jar': 'command-runner.jar',
+                    'Args': [
+                        'spark-submit',
+                        '--deploy-mode', 'client',
+                        f's3://{bucket_name}/scripts/Analytics-EMR.py',
+                        '--data_source', f's3://{bucket_name}/trusted/joined/',
+                        '--output_uri', f's3://{bucket_name}/refined/'
+                    ]
+                }
+            }
+        ]
+```
+
+## Data analysis and machine learning
+Data processing (achived using the script [`Analytics-EMR.py`](./scripts/Analytics-EMR.py)) is performed with a Spark application that conducts exploratory data analysis and clustering on COVID-related information stored in Parquet format. The main actions include:
+- Descriptive statistics:
+  - The number of registered countries per continent is calculated, provided that the `continent` field is not null.
+  - Statistics such as average and maximum values are calculated for columns like `total_cases`, `total_deaths`, `population`, and `cases_per_thousand`.
+  - Countries with available data in total_cases are filtered and sorted in descending order, selecting the top `10` with the most confirmed cases. Additional columns such as `continent`, `population`, and `cases_per_thousand` are also included.
+- SparkSQL usage:
+  - `Correlation analysis`: An SQL query is executed to calculate the correlation between indicators such as `human_development_index`, `gdp_per_capita`, and `population_density` with the `cases_per_thousand` metric, grouped by continent. The average of the indicators and the number of countries analyzed per group are also calculated.
+  - Countries are grouped according to their human development level `(HDI)` into categories: Very High `(≥ 0.8)`, High `(0.7–0.8)`, Medium `(0.55–0.7)`, and Low `(< 0.55)`. For each group, the number of countries, average cases per thousand inhabitants `(cases_per_thousand)`, and deaths per million `(total_deaths_per_million)` are calculated.
+    ```python
+    correlation_analysis = spark.sql("""
+                    SELECT 
+                        continent,
+                        CORR(human_development_index, cases_per_thousand) as hdi_cases_correlation,
+                        CORR(gdp_per_capita, cases_per_thousand) as gdp_cases_correlation,
+                        CORR(population_density, cases_per_thousand) as density_cases_correlation,
+                        COUNT(*) as country_count,
+                        AVG(human_development_index) as avg_hdi,
+                        AVG(gdp_per_capita) as avg_gdp
+                    FROM covid_data 
+                    WHERE human_development_index IS NOT NULL 
+                        AND cases_per_thousand IS NOT NULL
+                        AND gdp_per_capita IS NOT NULL
+                        AND population_density IS NOT NULL
+                    GROUP BY continent
+                    ORDER BY hdi_cases_correlation DESC NULLS LAST
+                """)
+    ```
+- SparkML usage:
+  - In order to group countries according to similar characteristics, we use a `K-Means` algorithm. We try to find patterns among countries, for example, countries with similar socioeconomic conditions and similar levels of `COVID` cases.
+  - A Machine Learning pipeline is built that includes feature assembly `(VectorAssembler)`, scaling `(StandardScaler)`, and clustering into 4 clusters.
+    ```python
+    features = ["human_development_index", "gdp_per_capita", "population_density"]
+                    
+                    assembler = VectorAssembler(inputCols=features, outputCol="features_raw")
+                    scaler = StandardScaler(inputCol="features_raw", outputCol="features_scaled")
+                    kmeans = KMeans(featuresCol="features_scaled", predictionCol="cluster", k=4, seed=42)
+                    
+                    pipeline = Pipeline(stages=[assembler, scaler, kmeans])
+                    
+                    print("Entrenando modelo de clustering...")
+                    model = pipeline.fit(ml_data)
+                    clustered_data = model.transform(ml_data)
+                    
+                    cluster_summary = clustered_data.groupBy("cluster") \
+                        .agg(
+                            count("location").alias("countries"),
+                            avg("human_development_index").alias("avg_hdi"),
+                            avg("gdp_per_capita").alias("avg_gdp"),
+                            avg("population_density").alias("avg_density"),
+                            avg("cases_per_thousand").alias("avg_cases_per_thousand")
+                        ).orderBy("cluster")
+    ```
 
 ---
 

@@ -37,7 +37,7 @@ def Analytics(data_source: str, output_uri: str) -> None:
 
                 # Guardar estadísticas básicas directamente
                 basic_stats.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/descriptive/continent_stats/")
-                print("✓ Guardadas estadísticas por continente")
+                print("Guardadas estadísticas por continente")
 
             # Análisis de columnas numéricas
             numeric_cols = [col for col in ['total_cases', 'total_deaths', 'population', 'cases_per_thousand'] if col in available_cols]
@@ -55,7 +55,7 @@ def Analytics(data_source: str, output_uri: str) -> None:
 
                 # Guardar resumen numérico directamente
                 numeric_summary.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/descriptive/numeric_summary/")
-                print("✓ Guardado resumen numérico")
+                print("Guardado resumen numérico")
             
             # Top 10 países por casos
             if 'location' in available_cols and 'total_cases' in available_cols:
@@ -65,7 +65,7 @@ def Analytics(data_source: str, output_uri: str) -> None:
                     .limit(10)
                 
                 top_countries.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/exploratory/top_countries/")
-                print("✓ Guardado top 10 países por casos")
+                print("Guardado top 10 países por casos")
 
             # Análisis de correlaciones
             corr_cols = ['human_development_index', 'gdp_per_capita', 'population_density', 'cases_per_thousand']
@@ -90,7 +90,7 @@ def Analytics(data_source: str, output_uri: str) -> None:
                 """)
                 
                 correlation_analysis.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/exploratory/correlation_analysis/")
-                print("✓ Guardado análisis de correlaciones")
+                print("Guardado análisis de correlaciones")
 
             # Análisis por HDI
             if 'human_development_index' in available_cols:
@@ -112,7 +112,7 @@ def Analytics(data_source: str, output_uri: str) -> None:
                 """)
                 
                 hdi_ranges.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/exploratory/hdi_analysis/")
-                print("✓ Guardado análisis por HDI")
+                print("Guardado análisis por HDI")
 
             # === ANÁLISIS AVANZADO (ML) ===
             ml_features = ['human_development_index', 'gdp_per_capita', 'population_density', 'cases_per_thousand']
@@ -168,14 +168,14 @@ def Analytics(data_source: str, output_uri: str) -> None:
                     
                     clustering_results.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/advanced/clusters/")
                     cluster_summary.coalesce(1).write.mode("overwrite").option("header", "true").csv(f"{output_uri}/advanced/cluster_summary/")
-                    print("✓ Guardado análisis de clustering")
+                    print("Guardado análisis de clustering")
                 else:
-                    print("⚠ No hay suficientes datos válidos para el análisis de ML")
+                    print("No hay suficientes datos válidos para el análisis de ML")
             else:
-                print(f"⚠ Faltan columnas necesarias para ML. Requeridas: {ml_features}")
+                print(f"Faltan columnas necesarias para ML. Requeridas: {ml_features}")
 
     except Exception as e:
-        print(f"✗ ERROR: {str(e)}")
+        print(f"ERROR: {str(e)}")
         traceback.print_exc()
         raise
 
@@ -188,6 +188,6 @@ if __name__ == "__main__":
 
         Analytics(args.data_source, args.output_uri)
     except Exception as e:
-        print(f"✗ ERROR: {str(e)}")
+        print(f"ERROR: {str(e)}")
         traceback.print_exc()
         raise
