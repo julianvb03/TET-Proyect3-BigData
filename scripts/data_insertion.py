@@ -1,40 +1,48 @@
-import pandas as pd
-from datetime import datetime
-from io import StringIO
 import boto3
+import psycopg2
+import requests
+import pandas as pd
+from io import StringIO
 
-s3_client = boto3.client('s3')
-lambda_client = boto3.client('lambda')
-
-BUCKET_NAME = 'st0263-proyecto3'  # Replace with your S3 bucket name
-COVID_RAW_PREFIX = 'raw/'
-EMR_LAMBDA_NAME = 'crearClusterEMR'  # Replace with your EMR Lambda function name
+BUCKET_NAME = "st0263-proyecto3"
+GITHUB_CSV_URL = "https://raw.githubusercontent.com/julianvb03/TET-Proyect3-BigData/refs/heads/main/data/covid_data.csv"
+GLUE_WORKFLOW_NAME = "run_ETL"
 
 def lambda_handler(event, context):
-    """
-    Lambda AWS function to load a CSV file from a URL into an S3 bucket, load a csv from a Relational Database and trigger an EMR cluster creation.
-    """
-    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-    
-    # --- CSV desde URL ---
-    try:
-        covid_url = "https://raw.githubusercontent.com/julianvb03/TET-Proyect3-BigData/refs/heads/main/data/covid_data.csv"
-        df = pd.read_csv(covid_url)
-
-        csv_buffer = StringIO()
-        df.to_csv(csv_buffer, index=False)
-        
-        covid_key = f'{COVID_RAW_PREFIX}covid_data.csv'
-        s3_client.put_object(
+    response = requests.get(GITHUB_CSV_URL)
+    if response.status_code == 200:
+        s3 = boto3.client("s3")
+        s3.put_object(
             Bucket=BUCKET_NAME,
-            Key=covid_key,
-            Body=csv_buffer.getvalue()
+            Key="raw/covid_data.csv",
+            Body=response.content
         )
+        print("✅ Archivo de GitHub subido correctamente a S3.")
+    else:
+        raise Exception("❌ Error al descargar el archivo desde GitHub.")
 
-        lambda_client.invoke(
-            FunctionName=EMR_LAMBDA_NAME,
-            InvocationType='Event'
-        )
-        return {'status': True, 'message': 'CSV cargado correctamente'}
-    except Exception as e:
-        return {'status': False, 'error': str(e)}
+    conn = psycopg2.connect(
+        host="database-p3.cr7nhi9bkmhs.us-east-1.rds.amazonaws.com",
+        port=5432,
+        database="postgres",
+        user="postgres",
+        password="admin123"
+    )
+    query = "SELECT * FROM country_data"
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    s3.put_object(
+        Bucket=BUCKET_NAME,
+        Key="raw/country_data.csv",
+        Body=csv_buffer.getvalue()
+    )
+    print("✅ Archivo desde PostgreSQL subido correctamente a S3.")
+    
+    glue = boto3.client('glue')
+    response = glue.start_workflow_run(Name=GLUE_WORKFLOW_NAME)
+    print(f"🚀 Workflow iniciado: runId = {response['RunId']}")
+
+    return {"status": "success"}

@@ -112,18 +112,6 @@ def lambda_handler(event, context):
                 }
             },
             {
-                'Name': 'ETL',
-                'ActionOnFailure': 'TERMINATE_CLUSTER',
-                'HadoopJarStep': {
-                    'Jar': 'command-runner.jar',
-                    'Args': [
-                        'spark-submit',
-                        '--deploy-mode', 'cluster',
-                        f's3://{bucket_name}/scripts/ETL.py',
-                    ]
-                }
-            },
-            {
                 'Name': 'Analytics',
                 'ActionOnFailure': 'TERMINATE_CLUSTER',
                 'HadoopJarStep': {
