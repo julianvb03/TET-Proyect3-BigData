@@ -335,22 +335,7 @@ Instances={
             'EmrManagedSlaveSecurityGroup': 'sg-059776e19481dae34',
             'InstanceFleets': [],
             'Ec2SubnetIds': ['subnet-00b2bd144141a60bc']
-        },
-        EbsRootVolumeSize=32,
-        VisibleToAllUsers=True,
-        JobFlowRole='EMR_EC2_DefaultRole',
-        ServiceRole='arn:aws:iam::296269837706:role/EMR_DefaultRole',
-        AutoScalingRole='arn:aws:iam::296269837706:role/LabRole',
-        ScaleDownBehavior='TERMINATE_AT_TASK_COMPLETION',
-        BootstrapActions=[
-            {
-                'Name': 'Dependencies',
-                'ScriptBootstrapAction': {
-                    'Path': f's3://{bucket_name}/scripts/dependencies.sh',
-                    'Args': []
-                }
-            },
-        ]
+        }
 ```
 Other fundamental parameters for achieving the project’s objectives are `BootstrapActions` and Steps. These define the actions to be executed during the cluster creation process—specifically, just before the installation of the selected applications `(BootstrapActions)`. In our case, the bootstrap actions are used to install the necessary dependencies for the correct execution of the [`Analytics-EMR.py`](./scripts/Analytics-EMR.py) script.
 
